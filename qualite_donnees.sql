@@ -32,16 +32,12 @@ SELECT DISTINCT symbol
 FROM stock_prices_work;
 
 
--- Contrôle des outliers 
-
-
 -- Début et fin de la période
 
 SELECT min(ts) as "début de la période", 
 	   max(ts) as "fin de la période"
 FROM stock_prices_work;
-
--- Statisque descriptive 
+ 
 
 -- Nombre d'observations
 SELECT COUNT(ts)
