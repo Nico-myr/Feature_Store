@@ -1,16 +1,16 @@
--- Copie pour travail
+-- Working Copy
 CREATE TABLE stock_prices_work AS
 SELECT *
 FROM stock_prices;
 
--- Controle des types 
+-- type control 
 SELECT
     column_name,
     data_type
 FROM information_schema.columns
 WHERE table_name = 'stock_prices_work';
 
--- Controle valeurs manquantes
+-- Missing Value Validation
 SELECT ts, open_price, high_price,
 	   low_price, close_price, volume
 FROM stock_prices_work
@@ -21,29 +21,29 @@ WHERE ts IS NULL OR
 	close_price IS NULL OR
 	volume IS NULL ;
 	
--- Controle valeurs en doubles
+-- Duplicate Value Validation
 SELECT ts
 FROM stock_prices_work
 GROUP BY ts
 HAVING COUNT(*) > 1;
 
--- Symbole 
+-- Symbol 
 SELECT DISTINCT symbol 
 FROM stock_prices_work;
 
 
--- Début et fin de la période
+-- Period Start and End
 
 SELECT min(ts) as "début de la période", 
 	   max(ts) as "fin de la période"
 FROM stock_prices_work;
  
 
--- Nombre d'observations
+-- Number of Observations
 SELECT COUNT(ts)
 FROM stock_prices_work;
 
--- Aggrégation par mois pour afficher la distribution avec Graph visualiser
+-- Monthly Aggregation for Distribution Visualization
 
 SELECT
     date_trunc('month', ts) AS month,
@@ -56,7 +56,7 @@ FROM stock_prices
 GROUP BY date_trunc('month', ts)
 ORDER BY month;
 
--- Aggrégation par années pour afficher la distribution avec Graph visualiser
+-- Yearly Aggregation for Distribution Visualization
 SELECT
     date_trunc('year', ts) AS year,
     ROUND (AVG(open_price),2)  AS avg_open,
