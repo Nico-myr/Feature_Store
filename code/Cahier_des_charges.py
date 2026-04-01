@@ -6,184 +6,172 @@ st.set_page_config(
     layout="wide",
 )
 
-
 st.title("FEATURE STORE")
-st.subheader(
-"Objectif du projet"
-)
+st.subheader("Project Objective")
 
 st.markdown(
 """
-Créer un feature store structuré et reproductible dédié au Bitcoin (BTC),
-afin de standardiser la génération de variables pour l’entraînement,
-l’évaluation et le backtesting de modèles de machine learning et de deep learning
-appliqués aux séries temporelles crypto-financières.
+Build a structured and reproducible feature store dedicated to Bitcoin (BTC),
+aimed at standardizing feature generation for training,
+evaluation, and backtesting of machine learning and deep learning models
+applied to crypto-financial time series.
 """
 )
 
-
 sections = [
-    "Besoins métier",
-    "Contraintes métiers",
-    "Contraintes techniques",
-    "Sources de données",
-    "Liste des features",
-    "Sources",
+    "Business Requirements",
+    "Business Constraints",
+    "Technical Constraints",
+    "Data Sources",
+    "Feature List",
+    "References",
 ]
-choice = st.sidebar.radio("Sommaire", sections)
+choice = st.sidebar.radio("Table of Contents", sections)
 
-
-
-if choice == "Besoins métier":
-    st.subheader("Principaux mécanismes du Bitcoin à capturer")
+if choice == "Business Requirements":
+    st.subheader("Key Bitcoin Dynamics to Capture")
     st.markdown(
         """
-Le feature store doit permettre de capturer :
+The feature store must capture:
 
-- Les **dynamiques de prix** via des **rendements logarithmiques multi horizons** (momentum, accélérations, retournements)
-- Le **risque & l'incertitude** avec des **volatilités glissantes**
-- L'**intensité de l’activité** avec le **volume échangé** (proxy de liquidité / d'engagement)
-- **Structure de tendance** avec les différents indicateurs **Ichimoku** (équilibre, congestion, régimes directionnels)
+- **Price dynamics** through **multi-horizon logarithmic returns** (momentum, acceleration, reversals)
+- **Risk & uncertainty** via **rolling volatility measures**
+- **Market activity intensity** using **trading volume** (liquidity / engagement proxy)
+- **Trend structure** using **Ichimoku indicators** (equilibrium, congestion, directional regimes)
 """
     )
 
-elif choice == "Contraintes métiers":
-    st.subheader("Contraintes métiers")
+elif choice == "Business Constraints":
+    st.subheader("Business Constraints")
     st.markdown(
         """
-- Marché des crypto-monnaies **continu (24/7, sans clôture)**
-- Fenêtres glissantes basées **uniquement sur l’ordre temporel**
-- **Forte volatilité** et **changements rapides de régime**
-- Utilisation de **rendements logarithmiques** et **volatilité glissante multi-horizons**
-- **Liquidité variable** et hétérogène
-- **Log(volume)** et **moyenne mobile** pour lisser l’activité
+- Cryptocurrency market operates **continuously (24/7, no closing sessions)**
+- Rolling windows must rely **strictly on temporal ordering**
+- **High volatility** and **frequent regime shifts**
+- Use of **logarithmic returns** and **multi-horizon rolling volatility**
+- **Heterogeneous and time-varying liquidity**
+- Use of **log(volume)** and **moving averages** to smooth activity
 """
     )
 
-elif choice == "Contraintes techniques":
-    st.subheader("Contraintes techniques")
+elif choice == "Technical Constraints":
+    st.subheader("Technical Constraints")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("### Performance & architecture")
+        st.markdown("### Performance & Architecture")
         st.markdown(
         """
-    - Table de features **matérialisée** pour éviter les recomputations
-    - Indexation temporelle pour accès rapide
-    - Pipeline compatible batch + entraînement ML
-    - Reproductibilité des features
-    - Versionnage des transformations
+    - **Materialized feature table** to avoid recomputation
+    - Time-based indexing for fast retrieval
+    - Pipeline compatible with batch processing and ML training
+    - Feature reproducibility
+    - Transformation versioning
     """
     )   
 
     with col2:
-        st.markdown("### Prévention du data leakage")
+        st.markdown("### Data Leakage Prevention")
         st.markdown(
         """
-    - Utilisation systématique de **lags**
-    - Fenêtres temporelles strictement passées
-    - Aucune utilisation d’information future
-    - Compatibilité avec backtesting réaliste
-    - Alignement strict features/target
+    - Systematic use of **lag features**
+    - Strictly backward-looking time windows
+    - No use of future information
+    - Compatibility with realistic backtesting
+    - Strict feature/target alignment
     """
     )
 
-elif choice == "Sources de données":
+elif choice == "Data Sources":
     st.subheader("Data Sources & Storage")
 
     st.markdown(
     """
-    ### Source primaire
-    Les données de marché proviennent d’une base PostgreSQL centralisée servant de data warehouse.
+### Primary Source
+Market data is sourced from a centralized PostgreSQL database acting as a data warehouse.
 
-    **Database**
-    - PostgreSQL
-    - Schéma : `market_data`
-    - Table : `btc_ohlcv`
-    - Granularité : 1 minute
-    - Actif : BTC/USDT
+**Database**
+- PostgreSQL
+- Schema: `market_data`
+- Table: `btc_ohlcv`
+- Granularity: 1 minute
+- Asset: BTC/USDT
 
-    **Structure**
-    - timestamp (PK)
-    - open
-    - high
-    - low
-    - close
-    - volume
+**Structure**
+- timestamp (PK)
+- open
+- high
+- low
+- close
+- volume
 
-    ### Feature Store
-    Les features sont matérialisées dans une table dédiée :
+### Feature Store
+Features are materialized in a dedicated table:
 
-    - Schéma : `feature_store`
-    - Table : `btc_feature_store`
-    - Index : timestamp
-    - Usage : ML training / backtesting / inference
+- Schema: `feature_store`
+- Table: `btc_feature_store`
+- Index: timestamp
+- Usage: ML training / backtesting / inference
 
-    ### Pipeline
-    API → ingestion → PostgreSQL → feature engineering → feature store
-    """
-    )
-
-
-elif choice == "Liste des features":
-    st.subheader("Liste des features")
-
-    features = [
-    {
-        "Famille": "Returns",
-        "Features": "logret_1m / 5m / 15m / 60m",
-        "Rôle": "Capturer les dynamiques de prix à différentes échelles temporelles pour les modèles ML et DL."
-    },
-    {
-        "Famille": "Return lags",
-        "Features": "lag_logret_n",
-        "Rôle": "Introduire de la mémoire temporelle dans les modèles tabulaires et stabiliser l’apprentissage."
-    },
-    {
-        "Famille": "Volatility",
-        "Features": "vol_60m, vol_1d",
-        "Rôle": "Permettre aux modèles d’adapter leurs prédictions au régime de volatilité du marché."
-    },
-    {
-        "Famille": "Volume",
-        "Features": "volume, log_volume, vol_ma",
-        "Rôle": "Mesurer l’intensité du marché et filtrer les mouvements peu liquides."
-    },
-    {
-        "Famille": "Ichimoku",
-        "Features": "tenkan, kijun, span_a, span_b",
-        "Rôle": "Capturer la structure de tendance et les zones d’équilibre du marché."
-    },
-    {
-        "Famille": "Derived",
-        "Features": "tenkan_dist, kijun_dist, cloud_width",
-        "Rôle": "Normaliser l’information de tendance pour améliorer la généralisation des modèles."
-    },
-    {
-        "Famille": "Signals",
-        "Features": "tenkan_cross, price_vs_cloud",
-        "Rôle": "Fournir des signaux de régime explicites pour faciliter l’apprentissage non linéaire."
-    },
-    {
-        "Famille": "Target",
-        "Features": "future_logret",
-        "Rôle": "Variable cible alignée temporellement pour l’entraînement supervisé."
-    },
-]
-
-
-
-    df = pd.DataFrame(features, columns=["Famille", "Features", "Rôle"])
-    st.table(df)
-                     
-
-
-elif choice == "Sources":
-    st.subheader("Sources")
-    st.markdown(
-        """
-- **Ichimoku Analyses & Stratégies** : Comment détecter la tendance des marchés pour les stocks, la cryptomonnaie et le Forex en combinant l’analyse technique et l’Ichimoku Cloud (seconde édition) — *Broché, 8 novembre 2022*, Charles G. Koonitz
+### Pipeline
+API → ingestion → PostgreSQL → feature engineering → feature store
 """
     )
 
+elif choice == "Feature List":
+    st.subheader("Feature List")
+
+    features = [
+    {
+        "Family": "Returns",
+        "Features": "logret_1m / 5m / 15m / 60m",
+        "Role": "Capture price dynamics across multiple time horizons for ML and DL models."
+    },
+    {
+        "Family": "Return Lags",
+        "Features": "lag_logret_n",
+        "Role": "Introduce temporal memory into tabular models and stabilize learning."
+    },
+    {
+        "Family": "Volatility",
+        "Features": "vol_60m, vol_1d",
+        "Role": "Enable models to adapt predictions to market volatility regimes."
+    },
+    {
+        "Family": "Volume",
+        "Features": "volume, log_volume, vol_ma",
+        "Role": "Measure market activity intensity and filter low-liquidity movements."
+    },
+    {
+        "Family": "Ichimoku",
+        "Features": "tenkan, kijun, span_a, span_b",
+        "Role": "Capture trend structure and market equilibrium zones."
+    },
+    {
+        "Family": "Derived",
+        "Features": "tenkan_dist, kijun_dist, cloud_width",
+        "Role": "Normalize trend-related information to improve model generalization."
+    },
+    {
+        "Family": "Signals",
+        "Features": "tenkan_cross, price_vs_cloud",
+        "Role": "Provide explicit regime signals to support non-linear learning."
+    },
+    {
+        "Family": "Target",
+        "Features": "future_logret",
+        "Role": "Time-aligned target variable for supervised learning."
+    },
+]
+
+    df = pd.DataFrame(features, columns=["Family", "Features", "Role"])
+    st.table(df)
+
+elif choice == "References":
+    st.subheader("References")
+    st.markdown(
+        """
+- **Ichimoku Analyses & Strategies**: How to Detect Market Trends for Stocks, Cryptocurrency, and Forex by Combining Technical Analysis and the Ichimoku Cloud (Second Edition) — *Paperback, November 8, 2022*, Charles G. Koonitz
+"""
+    )

@@ -1,9 +1,9 @@
 import streamlit as st
 from pathlib import Path
 
-st.title("Création du feature store")
+st.title("Feature Store Implementation")
 
-sql_path = Path("table_feature.sql")
+sql_path = Path("Feature_store.sql")
 query = sql_path.read_text(encoding="utf-8")
 
 st.code(query, language="sql")
